@@ -15,13 +15,15 @@ class Lexer {
         std::string input;
 
         int lineNumber;
+        int lineOffset;
         int colNumber;
         int offset;
 
         Lexer();
         Token getNextToken();
         void tokenize(std::string file_name);
-        void reset(bool purgeBuffers);
+        void reset(bool purgeBuffers = false);
+        void printTokens();
 
     private:
         Token matchKeyword();

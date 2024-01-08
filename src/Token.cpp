@@ -52,6 +52,7 @@ std::string Token::tokenTypeToString(Token::TokenType tokenType) {
         case Token::Procedure: return "Procedure";
         case Token::Return: return "Return";
         case Token::Unknown: return "Unknown";
+        case Token::Start: return "Start";
         case Token::End: return "End";
     }
 }
@@ -67,4 +68,10 @@ Token Token::retrieveTokenFromKeyword(std::string kw) {
 Token::Token(TokenType type, std::string data) {
     this->type = type;
     this->data = data;
+
+    this->StartCol = 0;
+    this->EndCol = 0;
+    this->StartLine = 0;
+    this->EndCol = 0;
+
 }

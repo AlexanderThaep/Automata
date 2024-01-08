@@ -29,7 +29,7 @@ Token Lexer::getNextToken() {
         char curChar = this->input[i];
         char nextChar = at(i + 1);
 
-        this->colNumber++;
+        this->colNumber = i - this->lineOffset;
         
         switch (curChar) {
             //Skip comments
@@ -44,7 +44,7 @@ Token Lexer::getNextToken() {
             //Whitespace is dealt with by skipping
             case '\n':
                 this->lineNumber++;
-                this->colNumber = 0;
+                this->lineOffset = i;
             case ' ':
             case '\t':
             case '\f':
@@ -108,10 +108,14 @@ Token Lexer::getNextToken() {
                 pushToken(Token(Token::Unknown, std::string(1, curChar)));
                 break;
         }
-
         i++;
-        return this->tokens.back();
+        Token &token = this->tokens.back();
+        token.EndCol = i - this->lineOffset;
+        token.EndLine = this->lineNumber;
+        return token;
     }
+
+    return Token(Token::End, "End");
 }
 
 void Lexer::tokenize(std::string file_name="") {
@@ -119,98 +123,16 @@ void Lexer::tokenize(std::string file_name="") {
     // tokenize(), tokenize("xyz.dog")
     if (!file_name.empty()) fileToLexer(*this, file_name);
     if (this->input.empty()) return;
+    reset();
 
-    bool commentMode = false;
+    Token token = Token(Token::Start, "Start");
 
-    this->lineNumber = 0;
-    this->colNumber = 0;
-    this->offset = 0;
-
-    for (int i = 0; i < this->input.size(); i++) {
-
-        char curChar = this->input[i];
-        char nextChar = at(i + 1);
-
-        //# comments activated # normal space
-        if (curChar == COMMENT_DELIMITER) { 
-            commentMode = !commentMode;
-            continue;
-        }
-        if (commentMode) {
-            continue;
-        }
-
-        this->colNumber = i - this->offset;
-        
-        switch (curChar) {
-            //Whitespace is dealt with by skipping
-            case '\n':
-                this->lineNumber++;
-                this->offset = i;
-                continue;
-            case ' ':
-            case '\t':
-            case '\f':
-            case '\v':
-            case '\r':
-                continue;
-            //Strings with interchangeable options for enclosing quotes
-            case '\'':
-            case '\"':
-                handleString(i);
-                continue;
-            //Words starting with A-Z, a-z, or _
-            case 'A' ... 'Z':
-            case 'a' ... 'z':
-            case '_':
-                handleWord(i);
-                continue;
-            //Numbers starting with digits
-            case '0' ... '9':
-                handleDigits(i);
-                continue;
-            //Dot operator or numbers starting with .
-            case '.':
-                switch (nextChar) {
-                    case '0' ... '9':
-                        this->currentString.push_back('0');
-                        handleDigits(i);
-                        continue;
-                }
-                pushToken(Token(Token::AccessOperator, "."));
-                continue;
-            //All of these share [x=] where x is the character
-            case '=':
-            case '+':
-            case '-':
-            case '/':
-            case '*':
-            case '&':
-            case '>':
-            case '<':
-            case '!':
-            case '|':
-                handlePunctuator(i);
-                continue;
-            case '{':
-            case '}':
-            case '(':
-            case ')':
-            case '[':
-            case ']':
-                this->currentString.push_back(curChar);
-                pushToken();
-                continue;
-            case '\0':
-                return;
-            default:
-                pushToken(Token(Token::Unknown, std::string(1, curChar)));
-                continue;
-        } 
+    while (token.type != Token::End) {
+        token = getNextToken();
     }
 } 
 
-void Lexer::reset(bool purgeBuffers = false) {
+void Lexer::reset(bool purgeBuffers) {
     if (purgeBuffers) {
         this->input.clear();
         this->tokens.clear();
@@ -218,6 +140,21 @@ void Lexer::reset(bool purgeBuffers = false) {
     this->lineNumber = 0;
     this->colNumber = 0;
     this->offset = 0;
+}
+
+void Lexer::printTokens() {
+    for (auto token : this->tokens) {
+        std::cout 
+        << Token::tokenTypeToString(token.type)
+        << "\t\t" 
+        << token.data 
+        << "\t"
+        << token.StartLine << "/" << token.StartCol 
+        << " "
+        << token.EndLine << "/" << token.EndCol
+        << 
+        std::endl;
+    }
 }
 
 Token Lexer::matchKeyword() {
@@ -241,8 +178,8 @@ char Lexer::at(int index) {
 // I don't very much like the overloading
 void Lexer::pushToken(Token token) {
     //Already got a token?
-    token.line = this->lineNumber;
-    token.col = this->colNumber;
+    token.StartLine = this->lineNumber;
+    token.StartCol = this->colNumber;
 
     this->tokens.push_back(token);
     this->currentString.clear();        
@@ -251,8 +188,8 @@ void Lexer::pushToken() {
     //Do not try to match empty against the hash table
     if (!this->currentString.empty()) {
         Token token = matchKeyword();
-        token.line = this->lineNumber;
-        token.col = this->colNumber;
+        token.StartLine = this->lineNumber;
+        token.StartCol = this->colNumber;
 
         this->tokens.push_back(token);
         this->currentString.clear();        

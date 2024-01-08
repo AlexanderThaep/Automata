@@ -30,6 +30,7 @@ class Token {
             Procedure,
             Return,
             Unknown,
+            Start,
             End
         };
 
@@ -39,8 +40,11 @@ class Token {
         TokenType type;
         std::string data;
 
-        int line;
-        int col;
+        int StartLine;
+        int StartCol;
+
+        int EndLine;
+        int EndCol;
 
         Token(TokenType type, std::string data);
 };
