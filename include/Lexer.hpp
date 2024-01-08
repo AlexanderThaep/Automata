@@ -2,14 +2,21 @@
 
 #include <string>
 #include <vector>
-#include <unordered_set>
 
 #include <Token.hpp>
+#include <Symbol.hpp>
 
 class Lexer {
     public:
-        std::unordered_map<std::string, Token> symbolTable;
+        Lexer();
+        std::vector<Token> getTokens();
+        Token getNextToken();
+        void tokenize(std::string file_name);
+        void reset(bool purgeBuffers = false);
+        void printTokens();
+        void stringToInput(std::string str);
 
+    private:
         std::vector<Token> tokens;
         std::string currentString;
         std::string input;
@@ -19,13 +26,6 @@ class Lexer {
         int colNumber;
         int offset;
 
-        Lexer();
-        Token getNextToken();
-        void tokenize(std::string file_name);
-        void reset(bool purgeBuffers = false);
-        void printTokens();
-
-    private:
         Token matchKeyword();
         char at(int index);
         void handlePunctuator(int &index);

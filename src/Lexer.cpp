@@ -5,6 +5,7 @@
 
 #include <Lexer.hpp>
 #include <Token.hpp>
+#include <Symbol.hpp>
 #include <FileIO.hpp>
 
 static const char COMMENT_DELIMITER = '#';
@@ -16,6 +17,10 @@ Lexer::Lexer() {
     //Nothing
     //LL(1) lexer, I spent way too much time on this, making it elegant
     //With token streaming
+}
+
+std::vector<Token> Lexer::getTokens() {
+    return this->tokens;
 }
 
 Token Lexer::getNextToken() {
@@ -34,12 +39,10 @@ Token Lexer::getNextToken() {
         switch (curChar) {
             //Skip comments
             case '#':
-                while (i < this->input.size()
-                    && this->input[i] != '#') 
-                {
+                do {
                     i++;
-                    continue;
                 }
+                while (i < this->input.size() && this->input[i] != '#');
                 break;
             //Whitespace is dealt with by skipping
             case '\n':
@@ -155,6 +158,16 @@ void Lexer::printTokens() {
         << 
         std::endl;
     }
+    for (auto symbol : Symbol::symbolTable) {
+        std::cout 
+        << symbol.second.data
+        <<
+        std::endl;
+    }
+}
+
+void Lexer::stringToInput(std::string str) {
+    this->input.append(str);
 }
 
 Token Lexer::matchKeyword() {
@@ -163,7 +176,7 @@ Token Lexer::matchKeyword() {
         token.type = Token::Identifier;
         token.data = this->currentString;
 
-        this->symbolTable.insert({this->currentString, token});
+        Symbol::symbolTable.insert({this->currentString, Symbol(token)});
     }
     return token;
 }

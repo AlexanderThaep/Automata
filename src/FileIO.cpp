@@ -13,7 +13,7 @@ void fileToLexer(Lexer &lxr, std::string file_name) {
 
     if (file.is_open()) {
         while (std::getline(file, temp)) {
-            lxr.input.append('\n' + temp);
+            lxr.stringToInput('\n' + temp);
         }
     }
     file.close();
