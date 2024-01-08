@@ -15,9 +15,12 @@ Lexer::Lexer() {
     this->offset = 0;
     //Nothing
     //LL(1) lexer, I spent way too much time on this, making it elegant
+    //With token streaming
 }
 
 Token Lexer::getNextToken() {
+
+    if (this->input.empty()) return Token(Token::End, "End");
 
     int &i = this->offset;
 
@@ -206,6 +209,16 @@ void Lexer::tokenize(std::string file_name="") {
         } 
     }
 } 
+
+void Lexer::reset(bool purgeBuffers = false) {
+    if (purgeBuffers) {
+        this->input.clear();
+        this->tokens.clear();
+    }
+    this->lineNumber = 0;
+    this->colNumber = 0;
+    this->offset = 0;
+}
 
 Token Lexer::matchKeyword() {
     Token token = Token::retrieveTokenFromKeyword(this->currentString);

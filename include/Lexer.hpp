@@ -21,6 +21,7 @@ class Lexer {
         Lexer();
         Token getNextToken();
         void tokenize(std::string file_name);
+        void reset(bool purgeBuffers);
 
     private:
         Token matchKeyword();
