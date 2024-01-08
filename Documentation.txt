@@ -1,0 +1,17 @@
+Unary ::= ++ -- * & ~ ! -
+Binary ::= - + = / * -= += == /= *= >> << < > != >= <=
+Keyword ::= proc ret var
+Syntax ::= ( ) [ ] { } ; : , .
+
+
+<Type> <Identifier> = <Value><Binary>?...<Value>
+
+<Identifier> = <Value><Binary>?...<Value>
+
+proc <Identifier> (<Space> <Argument>)...(<Space> <Argument>) { 
+    ret <Identifier>|<Literal>
+}
+
+<Value> ::= (<Type>)?<Unary>?<Value><Unary>?
+<Identifier> ::= <Word> not part of <Reserved>
+<Argument> ::= <Identifier>
