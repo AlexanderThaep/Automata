@@ -10,6 +10,7 @@ static std::unordered_map<std::string, Token> Keywords = {
     {"ret", Token(Token::Return, "ret")},
     {"proc", Token(Token::Procedure, "proc")},
     {"true", Token(Token::LiteralBool, "true")},
+    {"false", Token(Token::LiteralBool, "false")},
     {"for", Token(Token::For, "for")},
     {"while", Token(Token::While, "while")},
     {"do", Token(Token::Do, "do")},
@@ -23,6 +24,7 @@ static std::unordered_map<std::string, Token> Keywords = {
     {")", Token(Token::RightParen, ")")},
     {"[", Token(Token::LeftBracket, "[")},
     {"]", Token(Token::RightBracket, "]")},
+    {",", Token(Token::Separator, ",")},
 };
 
 std::string Token::tokenTypeToString(Token::TokenType tokenType) {
@@ -43,6 +45,7 @@ std::string Token::tokenTypeToString(Token::TokenType tokenType) {
         case Token::BinaryOperator: return "BinaryOperator";
         case Token::UnaryOperator: return "UnaryOperator";
         case Token::AccessOperator: return "AccessOperator";
+        case Token::Separator: return "Separator";
         case Token::If: return "If";
         case Token::Else: return "Else";
         case Token::Elif: return "Elif";
@@ -72,6 +75,5 @@ Token::Token(TokenType type, std::string data) {
     this->StartCol = 0;
     this->EndCol = 0;
     this->StartLine = 0;
-    this->EndCol = 0;
-
+    this->EndLine = 0;
 }

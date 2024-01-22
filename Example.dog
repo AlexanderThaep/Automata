@@ -1,9 +1,6 @@
 var arg1 = "9340\t..0_20b34"
 var arg2=.839
-var arg3 =true
-
-# a comment #
-
+var arg3 =true# a comment #
 proc addy arg1 arg2 {
     if (8 == 8 && 7 >= 5 || arg3) {
         ret (arg1 + arg2) * 8

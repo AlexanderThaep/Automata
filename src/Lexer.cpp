@@ -12,6 +12,7 @@ static const char COMMENT_DELIMITER = '#';
 
 Lexer::Lexer() {
     this->lineNumber = 0;
+    this->lineOffset = 0;
     this->colNumber = 0;
     this->offset = 0;
     //Nothing
@@ -25,122 +26,134 @@ std::vector<Token> Lexer::getTokens() {
 
 Token Lexer::getNextToken() {
 
-    if (this->input.empty()) return Token(Token::End, "End");
-
-    int &i = this->offset;
-
-    while (i < this->input.size()) {
-
-        char curChar = this->input[i];
-        char nextChar = at(i + 1);
-
-        this->colNumber = i - this->lineOffset;
-        
-        switch (curChar) {
-            //Skip comments
-            case '#':
-                do {
-                    i++;
-                }
-                while (i < this->input.size() && this->input[i] != '#');
-                break;
-            //Whitespace is dealt with by skipping
-            case '\n':
-                this->lineNumber++;
-                this->lineOffset = i;
-            case ' ':
-            case '\t':
-            case '\f':
-            case '\v':
-            case '\r':
-                i++;
-                continue;
-            //Strings with interchangeable options for enclosing quotes
-            case '\'':
-            case '\"':
-                handleString(i);
-                break;
-            //Words starting with A-Z, a-z, or _
-            case 'A' ... 'Z':
-            case 'a' ... 'z':
-            case '_':
-                handleWord(i);
-                break;
-            //Numbers starting with digits
-            case '0' ... '9':
-                handleDigits(i);
-                break;
-            //Dot operator or numbers starting with .
-            case '.':
-                switch (nextChar) {
-                    case '0' ... '9':
-                        this->currentString.push_back('0');
-                        handleDigits(i);
-                        break;
-                    default:
-                        pushToken(Token(Token::AccessOperator, "."));
-                        break;
-                }
-                break;
-            //All of these share [x=] where x is the character
-            case '=':
-            case '+':
-            case '-':
-            case '/':
-            case '*':
-            case '&':
-            case '>':
-            case '<':
-            case '!':
-            case '|':
-                handlePunctuator(i);
-                break;
-            case '{':
-            case '}':
-            case '(':
-            case ')':
-            case '[':
-            case ']':
-                this->currentString.push_back(curChar);
-                pushToken();
-                break;
-            case '\0':
-                pushToken(Token(Token::End, "End"));
-                break;
-            default:
-                pushToken(Token(Token::Unknown, std::string(1, curChar)));
-                break;
-        }
-        i++;
-        Token &token = this->tokens.back();
-        token.EndCol = i - this->lineOffset;
-        token.EndLine = this->lineNumber;
+    if (this->tokens.empty()) {
+        Token token = Token(Token::Start, "Start");
+        tokens.push_back(token);
         return token;
     }
 
-    return Token(Token::End, "End");
+    if (!this->input.empty()) {
+
+        int &i = this->offset;
+
+        while (i < this->input.size()) {
+
+            char curChar = this->input[i];
+            char nextChar = at(i + 1);
+
+            this->colNumber = i - this->lineOffset;
+            
+            switch (curChar) {
+                //Skip comments
+                case '#':
+                    do {
+                        i++;
+                    }
+                    while (i < this->input.size() && this->input[i] != COMMENT_DELIMITER);
+                    break;
+                //Whitespace is dealt with by skipping
+                case '\n':
+                    this->lineNumber++;
+                    this->lineOffset = i;
+                case ' ':
+                case '\t':
+                case '\f':
+                case '\v':
+                case '\r':
+                    i++;
+                    continue;
+                //Strings with interchangeable options for enclosing quotes
+                case '\'':
+                case '\"':
+                    handleString(i);
+                    break;
+                //Words starting with A-Z, a-z, or _
+                case 'A' ... 'Z':
+                case 'a' ... 'z':
+                case '_':
+                    handleWord(i);
+                    break;
+                //Numbers starting with digits
+                case '0' ... '9':
+                    handleDigits(i);
+                    break;
+                //Dot operator or numbers starting with .
+                case '.':
+                    switch (nextChar) {
+                        case '0' ... '9':
+                            this->currentString.push_back('0');
+                            handleDigits(i);
+                            break;
+                        default:
+                            pushToken(Token(Token::AccessOperator, "."));
+                            break;
+                    }
+                    break;
+                //All of these share [x=] where x is the character
+                case '=':
+                case '+':
+                case '-':
+                case '/':
+                case '*':
+                case '&':
+                case '>':
+                case '<':
+                case '!':
+                case '|':
+                    handleOperators(i);
+                    break;
+                case '{':
+                case '}':
+                case '(':
+                case ')':
+                case '[':
+                case ']':
+                case ',':
+                    this->currentString.push_back(curChar);
+                    pushToken();
+                    break;
+                case '\0':
+                    break;
+                default:
+                    pushToken(Token(Token::Unknown, std::string(1, curChar)));
+                    break;
+            }
+
+            i++;
+            Token &token = this->tokens.back();
+            token.EndCol = i - this->lineOffset;
+            token.EndLine = this->lineNumber;
+            return token;
+        }
+    }
+
+    Token token = Token(Token::End, "End");
+    this->tokens.push_back(token);
+
+    return token;
 }
 
 void Lexer::tokenize(std::string file_name="") {
     
     // tokenize(), tokenize("xyz.dog")
+    this->reset();
     if (!file_name.empty()) fileToLexer(*this, file_name);
     if (this->input.empty()) return;
-    reset();
 
     Token token = Token(Token::Start, "Start");
 
     while (token.type != Token::End) {
-        token = getNextToken();
-    }
+        token = this->getNextToken();
+    };
+
+    this->tokens.push_back(token);
 } 
 
-void Lexer::reset(bool purgeBuffers) {
-    if (purgeBuffers) {
-        this->input.clear();
-        this->tokens.clear();
-    }
+void Lexer::reset() {
+    this->input.clear();
+    this->tokens.clear();
     this->lineNumber = 0;
+    this->lineOffset = 0;
     this->colNumber = 0;
     this->offset = 0;
 }
@@ -209,7 +222,7 @@ void Lexer::pushToken() {
     }
 }
 
-void Lexer::handlePunctuator(int &index) {
+void Lexer::handleOperators(int &index) {
 
     char curChar = this->input[index];
     char nextChar = at(index + 1);
@@ -219,16 +232,15 @@ void Lexer::handlePunctuator(int &index) {
             this->currentString.push_back('=');
             break;
         case '+':
-            this->currentString.push_back('+');
             switch (nextChar) {
                 case '+':
                     pushToken(Token(Token::UnaryOperator, "++"));
                     index++;
                     return;
             }
+            this->currentString.push_back('+');
             break;
         case '-':
-            this->currentString.push_back('-');
             switch (nextChar) {
                 case '-':
                     pushToken(Token(Token::UnaryOperator, "--"));
@@ -239,6 +251,7 @@ void Lexer::handlePunctuator(int &index) {
                     index++;
                     return; 
             }
+            this->currentString.push_back('-');
             break;
         case '/':
             this->currentString.push_back('/');
@@ -251,8 +264,8 @@ void Lexer::handlePunctuator(int &index) {
                     pushToken(Token(Token::UnaryOperator, "*"));
                     return;
             }
-            pushToken(Token(Token::BinaryOperator, "*"));
-            return;
+            this->currentString.push_back('*');
+            break;
         case '&':
             switch (nextChar) {
                 case 'A' ... 'Z':
@@ -265,42 +278,42 @@ void Lexer::handlePunctuator(int &index) {
                     index++;
                     return;  
             }
-            pushToken(Token(Token::BinaryOperator, "&"));
+            this->currentString.push_back('&');
             return;
         case '>':
-            this->currentString.push_back('>');
             switch (nextChar) {
                 case '>':
                     pushToken(Token(Token::BinaryOperator, ">>"));
                     index++;
                     return;
             }
+            this->currentString.push_back('>');
             break;
         case '<':
-            this->currentString.push_back('<');
             switch (nextChar) {
                 case '<':
                     pushToken(Token(Token::BinaryOperator, "<<"));
                     index++;
                     return;
-            }            
+            }     
+            this->currentString.push_back('<');       
             break;
         case '!':
-            if (nextChar == '=') {
-                pushToken(Token(Token::BinaryOperator, "!="));
+            if (nextChar != '=') {
+                pushToken(Token(Token::UnaryOperator, "!"));
                 index++;
                 return;
             }
-            pushToken(Token(Token::UnaryOperator, "!"));
-            return;
+            this->currentString.push_back('!');       
+            break;
         case '|':
-            this->currentString.push_back('|');
             switch (nextChar) {
                 case '|':
                     pushToken(Token(Token::BinaryOperator, "||"));
                     index++;
                     return;
-            }            
+            }   
+            this->currentString.push_back('|');         
             break;
     }
 

@@ -1,17 +1,40 @@
 Unary ::= ++ -- * & ~ ! -
 Binary ::= - + = / * -= += == /= *= >> << < > != >= <=
-Keyword ::= proc ret var
+Keyword ::= proc ret var if elif else while
 Syntax ::= ( ) [ ] { } ; : , .
 
+const <Identifier> = <Expression>
+var <Identifier> = <Expression>
+<Identifier> = <Expression>
 
-<Type> <Identifier> = <Value><Binary>?...<Value>
-
-<Identifier> = <Value><Binary>?...<Value>
-
-proc <Identifier> (<Space> <Argument>)...(<Space> <Argument>) { 
+proc <Identifier> (<Space> <Identifier>)...(<Space> <Identifier>) {
+    <Statement>
+    ...
+    <Statement>
     ret <Identifier>|<Literal>
 }
 
-<Value> ::= (<Type>)?<Unary>?<Value><Unary>?
+while (<Expression>) {
+    
+}
+
+if (<Expression>) {
+    <Statement>
+    ...
+    <Statement>
+} elif (<Expression>) {
+    <Statement>
+    ...
+    <Statement>
+} else {
+    <Statement>
+    ...
+    <Statement>
+}
+
+<Expression> ::= <Value> <BinaryOp>?...<Value>?
+<Function> ::= <Identifier>(<Value>,...,<Value>)
+<Value> ::= <UnaryOp>?<Identifier>|<Literal>|<Function><UnaryOp>? 
+    | <UnaryOp>?<Identifier>|<Literal>|<Function><DotOp><Identifier>
 <Identifier> ::= <Word> not part of <Reserved>
-<Argument> ::= <Identifier>
+<Literal> ::= <Float>|<Integer>|<Boolean>|<String>|<Character>

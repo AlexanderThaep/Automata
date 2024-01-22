@@ -12,7 +12,7 @@ class Lexer {
         std::vector<Token> getTokens();
         Token getNextToken();
         void tokenize(std::string file_name);
-        void reset(bool purgeBuffers = false);
+        void reset();
         void printTokens();
         void stringToInput(std::string str);
 
@@ -24,11 +24,12 @@ class Lexer {
         int lineNumber;
         int lineOffset;
         int colNumber;
+
         int offset;
 
         Token matchKeyword();
         char at(int index);
-        void handlePunctuator(int &index);
+        void handleOperators(int &index);
         void handleString(int &index);
         void handleWord(int &index);
         void handleDigits(int &index);

@@ -22,6 +22,5 @@ class Symbol : public Token {
         bool isDeclared;
         bool isInitialized;
 
-        using Token::Token;
         Symbol(Token token);
 };

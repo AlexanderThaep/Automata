@@ -25,6 +25,7 @@ class Token {
             UnaryOperator,
             AccessOperator,
             // Miscellaneous
+            Separator,
             If, Else, Elif,
             For, While, Do,
             Procedure,
