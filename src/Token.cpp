@@ -4,6 +4,7 @@
 #include <Token.hpp>
 
 static std::unordered_map<std::string, Token> Keywords = {
+    // using a hashmap here since all these map one-to-one
     {"var", Token(Token::Variable, "var")},
     {"const", Token(Token::Constant, "const")},
     {"ptr", Token(Token::Pointer, "ptr")},
@@ -17,18 +18,20 @@ static std::unordered_map<std::string, Token> Keywords = {
     {"if", Token(Token::If, "if")},
     {"else", Token(Token::Else, "else")},
     {"elif", Token(Token::Elif, "elif")},
-    //More keywords here
+    // More keywords here
+    // For the sake of convenience, these are keywords
     {"{", Token(Token::LeftBrace, "{")},
     {"}", Token(Token::RightBrace, "}")},
     {"(", Token(Token::LeftParen, "(")},
     {")", Token(Token::RightParen, ")")},
     {"[", Token(Token::LeftBracket, "[")},
     {"]", Token(Token::RightBracket, "]")},
-    {",", Token(Token::Separator, ",")},
+    {",", Token(Token::Comma, ",")},
 };
 
 std::string Token::tokenTypeToString(Token::TokenType tokenType) {
     switch (tokenType) {
+        // all possible tokens
         case Token::Identifier: return "Identifier";
         case Token::Constant: return "Constant";
         case Token::Variable: return "Variable";
@@ -45,7 +48,7 @@ std::string Token::tokenTypeToString(Token::TokenType tokenType) {
         case Token::BinaryOperator: return "BinaryOperator";
         case Token::UnaryOperator: return "UnaryOperator";
         case Token::AccessOperator: return "AccessOperator";
-        case Token::Separator: return "Separator";
+        case Token::Comma: return "Separator";
         case Token::If: return "If";
         case Token::Else: return "Else";
         case Token::Elif: return "Elif";

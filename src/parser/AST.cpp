@@ -4,11 +4,15 @@
 #include <Token.hpp>
 #include <AST.hpp>
 
-AST::ASTNode::ASTNode(AST::Type type) {
-    // TODO
+AST::ASTNode::ASTNode(Token *token, AST::Type type) {
+    this->token = token;
+    this->type = type;
 }
 
 AST::AST() {
-    ASTNode *node = new ASTNode(AST::Type::BlockDeclaration);
-    this->nodes.push_back(*node);
+    this->head = new ASTNode(nullptr, AST::BlockDeclaration);
 };
+
+AST::ASTNode* AST::getHead() {
+    return this->head;
+}

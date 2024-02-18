@@ -6,23 +6,37 @@
 #include <Token.hpp>
 
 class AST {
-private:
+public:
     enum Type {
         BlockDeclaration,
         VariableDeclaration,
+        VariableAddress,
+        Plus,
+        Minus,
+        Assign,
+        Value
+    };
 
+    enum Precedence {
+        Equal,
+        MinPlus,
+        MultDiv,
+        Binary,
+        Unary,
+        Function
     };
 
     struct ASTNode {
         AST::Type type;
         Token *token;
-        std::vector<ASTNode> children;
+        std::vector<ASTNode*> children;
 
-        ASTNode(AST::Type type);
+        ASTNode(Token *token, AST::Type type);
     };
-
-    std::vector<ASTNode> nodes;
-
-public:
+    
     AST();
+    ASTNode* getHead();
+    
+private:
+    ASTNode *head;
 };

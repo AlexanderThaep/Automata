@@ -5,7 +5,8 @@
 
 class Token {
     public:
-            enum TokenType {
+        enum TokenType {
+            // All token types
             // Arguably the most important
             Identifier,
             // Types
@@ -25,7 +26,7 @@ class Token {
             UnaryOperator,
             AccessOperator,
             // Miscellaneous
-            Separator,
+            Comma,
             If, Else, Elif,
             For, While, Do,
             Procedure,

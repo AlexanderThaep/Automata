@@ -14,7 +14,9 @@ Parser::Parser() {
     this->ast = new AST();
 }
 
-void parseTerm(std::vector<Token>::iterator &tokenIter) {
+// Shunting yard vs precedence climbing
+
+AST::ASTNode* parseTerm(std::vector<Token>::iterator &tokenIter) {
     Token current = *tokenIter;
     Token lookahead = *(tokenIter + 1);
 
@@ -32,8 +34,10 @@ void parseTerm(std::vector<Token>::iterator &tokenIter) {
         case Token::LiteralNum:
         case Token::LiteralStr:
         case Token::Identifier:
-            // term
-            return;
+            if (current.type == Token::Identifier && lookahead.type == Token::LeftParen) {
+                // parse function args
+            }
+            return new AST::ASTNode(&current, AST::Value);
         case Token::LeftParen:
             parseExpression(tokenIter += 1);
             return;
@@ -67,9 +71,7 @@ void parseDeclaration(std::vector<Token>::iterator &tokenIter) {
 
     switch (current.type) {
         case Token::BinaryOperator:
-            if (current.data == "=") {
-                parseExpression(tokenIter += 1);
-            }
+
             return;
         default:
             return;
@@ -89,8 +91,8 @@ void parseBlock(std::vector<Token>::iterator &tokenIter) {
         switch (current.type) {
             case Token::Constant:
             case Token::Variable:
-            case Token::Procedure:
                 if (lookahead.type == Token::Identifier) {
+                    AST::ASTNode *node = new AST::ASTNode(&current, AST::VariableDeclaration);
                     parseDeclaration(tokenIter += 2);
                 }
                 return;
@@ -99,7 +101,11 @@ void parseBlock(std::vector<Token>::iterator &tokenIter) {
                     tokenIter += 2;
                     // parse function args
                 }
-                parseDeclaration(tokenIter += 1);
+                if (current.data == "=") {
+                    parseExpression(tokenIter += 1);
+                }
+                return;
+            case Token::Procedure:
                 return;
             default:
                 return;
